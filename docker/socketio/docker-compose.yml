@@ -1,0 +1,32 @@
+services:
+  seed-vc-socketio:
+    build:
+      context: ../../
+      dockerfile: docker/socketio/Dockerfile
+    container_name: seed-vc-socketio-server
+    ports:
+      - "5000:5000"
+    environment:
+      - LOG_LEVEL=${LOG_LEVEL:-INFO}
+      - CUDA_VISIBLE_DEVICES=${CUDA_VISIBLE_DEVICES:-0}
+    volumes:
+      # Mount HuggingFace cache to persist downloaded models
+      - huggingface_cache:/root/.cache/huggingface
+      # Mount source code for development (optional)
+      - ../../seed_vc:/app/seed_vc
+      - ../../configs:/app/configs
+      - ../../examples:/app/examples
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+    restart: unless-stopped
+    stdin_open: true
+    tty: true
+
+volumes:
+  huggingface_cache:
+    driver: local

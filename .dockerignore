@@ -1,0 +1,64 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+.env
+
+# Poetry
+dist/
+.venv/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Git
+.git/
+.gitignore
+
+# Documentation
+docs/
+*.md
+!README.md
+
+# Tests
+tests/
+test/
+*_test.py
+*_test.go
+
+# CI/CD
+.github/
+.gitlab-ci.yml
+.travis.yml
+
+# Development files
+*.log
+*.pid
+*.seed
+*.pid.lock
+.coverage
+.tox/
+.pytest_cache/
+.mypy_cache/
+
+# Build artifacts
+build/
+*.egg-info/
+.eggs/
+
+# Other
+docker-compose*.yml
+Dockerfile*
+!docker/socketio/Dockerfile

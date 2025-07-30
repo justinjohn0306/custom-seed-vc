@@ -1,0 +1,16 @@
+{
+    "include": [
+        "seed_vc",
+        "cli"
+    ],
+    "exclude": [
+        "**/__pycache__",
+        ".git",
+        ".venv"
+    ],
+    "ignore": [
+        "**/*.py"
+    ],
+    "venvPath": ".",
+    "venv": ".venv"
+}
