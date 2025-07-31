@@ -1,35 +1,35 @@
-# SocketIOを用いたリアルタイム音声変換
+# Real-Time Voice Conversion Using SocketIO
 
-本Exampleでは、SocketIOを用いた、リアルタイム音声変換のサーバーとクライアントの利用方法を説明します。
+This example explains how to use SocketIO for real-time voice conversion with both server and client components.
 
-## 環境構築
+## Environment Setup
 
-SocketIO用のモジュールをインストールしてください。
-Client側のマシンでは、`--only`オプションを使うことで必要最小限のモジュールのみをインストールできます。
+Install the necessary modules for SocketIO.
+On the **client** machine, you can install only the required minimal modules using the `--only` option.
 
 ```bash
 $ cd /path/to/custom-seed-vc/
 
-# Server側でのモジュールをインストール
+# Install modules for the server
 $ poetry install
 
-# Client側でのモジュールをインストール
+# Install minimal modules for the client
 $ poetry install --only client
 ```
 
-## 使い方
+## How to Use
 
-### Serverの起動
+### Starting the Server
 
-Serverを起動するには、以下のコマンドを実行します。
-起動には時間がかかる場合があります。
+To start the server, run the following commands. It may take some time to initialize.
 
 ```bash
 $ cd /path/to/custom-seed-vc/
 $ poetry run python seed_vc/socketio/server.py
 ```
 
-起動が完了すると次のようなメッセージが表示されます。
+Once the server is up, you'll see output like this:
+
 ```bash
 $ poetry run python seed_vc/socketio/server.py
 [15:09:22] [SERVER] [INFO] 🚀 Starting server imports...
@@ -41,17 +41,17 @@ $ poetry run python seed_vc/socketio/server.py
 [15:09:53] [SERVER] [INFO] 🌟 Ready to accept connections!
 ```
 
-### Clientの起動
+### Starting the Client
 
-Clientを起動するには、以下のコマンドを実行します。
-Serverが起動していることを確認してから実行してください。
+To start the client, run the following.
+Make sure the server is running beforehand.
 
 ```bash
 $ cd /path/to/custom-seed-vc/
 $ poetry run python seed_vc/socketio/client.py
 ```
 
-起動が完了して、Serverと接続できると次のようなメッセージが表示されます。
+When the client successfully connects to the server, you'll see something like:
 
 ```bash
 $ poetry run python seed_vc/socketio/client.py
@@ -60,78 +60,83 @@ $ poetry run python seed_vc/socketio/client.py
 [15:11:57] [CLIENT] [INFO] 🎧 Streaming... (Ctrl+C to stop)
 ```
 
-この状態で、Client側のマイクから音声を入力すると、Server側で音声変換が行われ、変換された音声がClient側のスピーカーから再生されます。
+At this point, audio from the client’s microphone will be sent to the server, converted in real time, and the transformed audio will be played through the client’s speakers.
 
-ServerとClient間にラグがあると感じる場合は一度、Client側だけを再起動することで改善される場合があります。
+If you experience lag between the server and client, restarting just the client might help reduce it.
 
-### FastAPIによる設定の変更
+### Changing Settings via FastAPI
 
-Serverを起動した状態でAPIを叩くと、音声変換の設定を変更することができます。
-次のようなAPIが用意されています。
+While the server is running, you can use the API to change voice conversion settings.
+The following APIs are available:
 
-- 変換モードの変更
-    - convert : 音声変換を行うモード（デフォルト）
-    - passthrough : 音声変換を行わず、入力音声をそのまま出力するモード
-    - silence : 音声を無音にするモード
+* **Switch Conversion Modes**:
+
+  * `convert`: Default mode, performs voice conversion
+  * `passthrough`: Outputs input audio without conversion
+  * `silence`: Outputs silence
+
 ```bash
 $ curl -X POST "http://localhost:5000/api/v1/mode" \
     -H "Content-Type: application/json" \
     -d '{"mode": "passthrough"}'
 ```
 
-- リファレンス音声の変更
+* **Change Reference Audio**:
+
 ```bash
 $ curl -X POST "http://localhost:5000/api/v1/reference" \
     -H "Content-Type: application/json" \
     -d '{"file_path": "assets/examples/reference/trump_0.wav"}'
 
-# セキュリティの関係からデフォルトでは assets/examples/reference/ 以下の音声ファイルのみを指定できます。
-# 別のディレクトリの音声ファイルを指定したい場合は、server.pyを起動する際に、`--allowed-audio-dirs`オプションをつけて起動してください。
+# For security, only files under assets/examples/reference/ can be used by default.
+# To allow other directories, use --allowed-audio-dirs when starting the server:
 $ poetry run python seed_vc/socketio/server.py --allowed-audio-dirs /path/to/your/audio/dir
 ```
 
-- 音声変換モデルの各種パラメータの変更
+* **Adjust Voice Conversion Parameters**:
+
 ```bash
 $ curl -X POST "http://localhost:5000/api/v1/parameters" \
     -H "Content-Type: application/json" \
     -d '{"block_time": 0.18,"extra_time_ce": 0.5}'
 ```
 
-- 音声変換モデルの再読み込み
+* **Reload the Voice Conversion Model**:
+
 ```bash
-# デフォルトの音声変換モデルを再読み込み
+# Reload the default voice conversion model
 $ curl -X POST "http://localhost:5000/api/v1/reload" \
     -H "Content-Type: application/json" \
     -d '{}'
 
-# ファインチューニングした音声変換モデルを読み込み
+# Load a fine-tuned model
 $ curl -X POST "http://localhost:5000/api/v1/reload" \
     -H "Content-Type: application/json" \
     -d '{"checkpoint_path": "examples/fine-tuning/runs/my_run/ft_model.pth", "config_path": "examples/fine-tuning/runs/my_run/config_dit_mel_seed_uvit_xlsr_tiny.yml"}'
 ```
 
-詳しいAPIの仕様は、Serverを起動した状態で、ブラウザから`http://localhost:5000/docs`にアクセスすることで確認できます。
+To see full API documentation, go to:
+`http://localhost:5000/docs` in your browser while the server is running.
 
-## Dockerを用いた実行
+## Running with Docker
 
-Dockerを用いてServerを実行することもできます。以下の手順で実行できます。
+You can also run the server using Docker. Follow the steps below:
 
-### Dockerイメージのビルド
+### Build the Docker Image
 
 ```bash
 $ export COMPOSE_FILE=docker/socketio/docker-compose.yml
 $ docker compose build
 ```
 
-### Dockerコンテナの起動・停止
+### Start and Stop Docker Container
 
 ```bash
-# コンテナの起動
-# デフォルトではポート5000で起動
+# Start the container (default port is 5000)
 $ docker compose up -d
 
-# コンテナの停止
+# Stop the container
 $ docker compose down
 ```
 
-コンテナの起動後、通常と同じようにClientを起動してコンテナ上のサーバーに接続することでリアルタイム音声変換を行うことができます。
+After the container is running, you can start the client as usual to connect to the server inside the container for real-time voice conversion.
